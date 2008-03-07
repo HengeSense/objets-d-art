@@ -18,11 +18,11 @@ class Tag(models.Model):
 	return self.description
 
 #####
-# Composition
+# Objet
 # 
-# This model describes a single composition, along with ways to access it from both Client and Customer side.
+# This model describes a single distributable object, along with ways to access it from both Client and Customer side.
 #
-class Composition(models.Model):
+class Objet(models.Model):
     title = models.CharField(maxlength = 250)
     duration = models.FloatField(max_digits = 5, decimal_places = 2)
     created = models.DateField()
@@ -44,7 +44,7 @@ class Composition(models.Model):
 #####
 # Contract
 #
-# This model represents a contract tied to an individual or a composition, keeping all the information in the database for different output formats
+# This model represents a contract tied to an individual or a object, keeping all the information in the database for different output formats
 #
 class Contract(models.Model):
     # Contract basics
@@ -89,13 +89,13 @@ class Contract(models.Model):
 #####
 # Client
 #
-# This model is tied to a user and represents a composer/client as a profile
+# This model is tied to a user and represents a artist/client as a profile
 #
 class Client(models.Model):
     user = models.ForeignKey(User)
     profile = models.TextField(blank = True)
     bio = models.TextField(blank = True)
-    works = models.ManyToManyField('Composition')
+    works = models.ManyToManyField('Objet')
     commissions = models.ManyToManyField('Commission')
     coupons = models.ManyToManyField('Coupon')
     contracts = models.ManyToManyField('Contract')
@@ -137,15 +137,15 @@ class Cart(models.Model):
 #####
 class Item(models.Model):
     type = models.ManyToManyField('Tag')
-    composition = models.ManyToManyField('Composition')
+    objet = models.ManyToManyField('Objet')
     commission = models.ManyToManyField('Commission')
     coupon = models.ManyToManyField('Coupon')
     credit = model.ManyToManyField('Credit')
     amount = models.IntegerField(null = True)
 
-    def item(self):
+    def item(self): #XXX: Rewrite for tags
 	if (self.type == 'P'):
-	    return self.Composition
+	    return self.Objet
 	else:
 	    return self.Commission
 
@@ -153,7 +153,7 @@ class Item(models.Model):
 class Commission(models.Model):
     customer = models.ForeignKey('Customer')
     contract = models.ForeignKey('Contract')
-    composition = models.ForeignKey('Composition')
+    objet = models.ForeignKey('Objet')
     base = models.FloatField(max_digits = 6, decimal_places = 2)
     rate = models.FloatField(max_digits = 2, decimal_places = 1)
     flags = models.ManyToManyField('Tag')
