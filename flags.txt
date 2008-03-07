@@ -1,0 +1,115 @@
+Tag key:
+    tag/tag = external tag
+    tag:tag = internal tag
+
+COMPOSITION FLAGS:
+==================
+ensemble/choral
+ensemble/choral/SATB (etc)
+ensemble/solo
+ensemble/solo/voice-keyboard (etc)
+ensemble/chamber
+ensemble/chamber/string-quartet (etc)
+ensemble/full
+ensemble/full/wind-band (etc)
+ensemble/mixed
+ensemble/mixed/orchestra-choir  (etc)
+ensemble/unique
+ensemble/unique/guitar + ensemble/unique/flute (etc)
+
+category/concert
+category/concert/sacred
+category/concert/secular
+category/occasional
+category/occasional/sacred
+category/occasional/secular
+category/jazz
+category/musical-theater
+category/educational
+
+difficulty/1
+difficulty/2
+difficulty/3
+difficulty/4
+difficulty/5
+
+composition:is_in_review
+composition:is_accepted
+composition:is_edited
+composition:is_under_contract
+composition:is_out_of_print
+composition:is_commission
+composition:is_commission_draft
+
+CONTRACT FLAGS:
+===============
+contract:coupon:class_A (plus B, C, and D)
+contract:coupon:class_B (plus C and D)
+contract:coupon:class_C (plus D)
+contract:coupon:class_D
+contract:coupon:none
+
+contract:printing:on_demand
+contract:printing:business_run
+contract:printing:client_run
+
+contract:signature:paper
+contract:signature:digital
+contract:signature:escrow
+
+contract:is_addendum
+contract:is_annulled
+contract:is_active
+contract:is_template
+contract:is_base_contract
+
+CUSTOMER FLAGS:
+===============
+customer:receives_email
+customer:receives_mailer
+customer:is_client
+
+CART FLAGS:
+===========
+cart:is_active
+cart:is_expedited
+cart:is_paid
+cart:is_fulfilled
+cart:is_bounced
+cart:is_problem
+
+ITEM FLAGS:
+===========
+item:composition
+item:commission
+item:coupon
+item:credit
+
+COMMISSION FLAGS:
+=================
+commission:is_in_negotiation
+commission:is_in_progress
+commission:is_completed
+commission:is_paid
+
+CORRESPONDENCE FLAGS:
+=====================
+correspsondence:is_read_by_all
+
+COUPON FLAGS:
+=============
+coupon:class_A (Site-wide)
+coupon:class_B (Sale)
+coupon:class_C (Composer)
+coupon:class_D (Composition)
+
+coupon:is_expired
+
+CREDIT FLAGS:
+=============
+credit:gift
+credit:intro_offer
+credit:refund
+credit:payment
+
+credit:is_active
