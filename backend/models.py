@@ -30,10 +30,15 @@ class Objet(models.Model):
     bulk_discount_threshold = models.IntegerField(default = 0) # 0 means no bulk discount
     contract = models.ForeignKey('Contract') #TODO: Make sure to make a null contract
     price = models.FloatField(max_digits = 5, decimal_places = 2)
-    scorch_file = models.FilePathField(path = "/path/to/ScorchData", match = "*.sib")
-    printable_file = models.FilePathField(path = "/path/to/PrintData", match = "*.pdf") # for internal use only
+    length = models.FloatField(max_digits = 3, decimal_places = 1) # In inches
+    width = models.FloatField(max_digits = 3, decimal_places = 1) # In inches
+    tens_height = models.FloatField(max_digits = 3, decimal_places = 1) # The height of ten shippable objects in inches
+    copies_sold = models.IntegerField()
+    thumbnail_file = models.FileField(upload_to = "ThumbData/%Y/%m")
+    editable_file = models.FileField(upload_to = "ScoreFiles/%Y/%m") # Protect with .htaccess
+    viewable_file = models.FileField(upload_to = "ScorchData/%Y/%m")
+    printable_file = models.FileField(upload_to = "PrintData/%Y/%m") # Protect with .htaccess
     tags = models.ManyToManyField('Tag')
-    flags = models.ManyToManyField('Tag')
 
     class Admin:
 	pass
@@ -67,7 +72,7 @@ class Contract(models.Model):
     printing = models.TextField(blank = True)
     payment = models.TextField(blank = True)
     rights = models.TextField(blank = True)
-    flags = models.ManyToManyField('Tag')
+    tags = models.ManyToManyField('Tag')
 
     class Admin:
 	pass
@@ -85,6 +90,28 @@ class Contract(models.Model):
 	else:
 	    addendum = ''
 	return join(' ', (self.title, 'between', a, '&', b, '-', self.date_created, addendum, active))
+												      
+#####
+# Application
+#
+# This model contains client applications
+#
+class Application(models.Model):
+    # For populating the User model
+    username = models.CharField(maxlength = 30, primary_key = True)
+    first_name = models.CharField(maxlength = 30)
+    last_name = models.CharField(maxlength = 30)
+    email = models.EmailField()
+
+    # Other information
+    portfolio = models.CharField(maxlength = 200) # url or 'Emailed'
+    bio = models.TextField()
+    education = models.TextField()
+    influences = models.TextField()
+    primary_style = models.TextField()
+    why_join = models.TextField()
+    other_info = models.TextField() # Other publishign contracts, jobs, hobbies, quirks, etc.
+    tags = models.ManyToManyField('Tag')
 
 #####
 # Client
@@ -100,6 +127,7 @@ class Client(models.Model):
     coupons = models.ManyToManyField('Coupon')
     contracts = models.ManyToManyField('Contract')
     balance = models.FloatField(max_digits = 8, decimal_places = 2)
+    tags = models.ManyToManyField('Tag')
 
     class Admin:
 	pass
@@ -108,13 +136,17 @@ class Client(models.Model):
 	return join(' ', self.user.first_name, self.user.last_name)
 
 #####
+# Customer
+#
+# This model is tied to a user and represents a store customer
+#
 class Customer(models.Model):
     user = models.ForeignKey(User)
     shipping_address1 = models.CharField(blank = True, maxlength = 250)
     shipping_address2 = models.CharField(blank = True, maxlength = 250)
     shipping_city = models.CharField(blank = True, maxlength = 120)
     shipping_state = models.USStateField(blank = True)
-    cart = models.ForeignKey('Cart')
+    cart = models.ManyToManyField('Cart')
     flags = models.ManyToManyField('Tag')
 
     class Admin:
@@ -124,9 +156,15 @@ class Customer(models.Model):
 	return join(' ', self.user.first_name, self.user.last_name)
 
 #####
+# Cart
+#
+# The cart object belongs to a customer and contain as many 'item' objects as needed
+#
 class Cart(models.Model):
-    items = models.ManyToManyField('Item')
-    shipping = models.ManyToManyField('Tag')
+    title = models.CharField(maxlength = 50)
+    items = models.XMLField(schema_path = "/path/to/cartschema.rnc") # xml.dom.minidom
+    total = models.FloatField(max_digits = 5, decimal_places = 2)
+    shipping = models.ForeignKey('Tag')
     payment = models.ManyToManyField('Tag')
     expires = models.DateField() # test: if ((expires - datetime.date.today()).days <= 0): delete this
     flags = models.ManyToManyField('Tag')
@@ -135,21 +173,10 @@ class Cart(models.Model):
 	pass
 
 #####
-class Item(models.Model):
-    type = models.ManyToManyField('Tag')
-    objet = models.ManyToManyField('Objet')
-    commission = models.ManyToManyField('Commission')
-    coupon = models.ManyToManyField('Coupon')
-    credit = model.ManyToManyField('Credit')
-    amount = models.IntegerField(null = True)
-
-    def item(self): #XXX: Rewrite for tags
-	if (self.type == 'P'):
-	    return self.Objet
-	else:
-	    return self.Commission
-
-#####
+# Commission
+#
+# The commission object represents a commission tied to a score.
+#
 class Commission(models.Model):
     customer = models.ForeignKey('Customer')
     contract = models.ForeignKey('Contract')
@@ -162,7 +189,11 @@ class Commission(models.Model):
 	pass
 
 #####
-class Coorespondence(model.Model)
+# Correspondence
+#
+# This class represents a communcation between two or more people.
+#
+class Correspondence(model.Model)
     when = models.DateTimeField(auto_now_add = True)
     creator = models.ForeignKey(User)
     between = models.ManyToManyField(User)
@@ -171,8 +202,12 @@ class Coorespondence(model.Model)
     flags = models.ManyToManyField('Tag')
 
 #####
+# Coupon
+# 
+# Coupons are percentage-based discounts applicable to certain objets
+#
 class Coupon(models.Model):
-    coupon_id = models.CharField(maxlength = 30, primary_key = True)
+    coupon_code = models.CharField(maxlength = 30)
     type =  models.ManyToManyField('Tag')
     description = models.CharField(maxlength = 500)
     discount = models.IntegerField()
@@ -187,6 +222,10 @@ class Coupon(models.Model):
 	return self.discount + '% off!  ' + self.description
 
 #####
+# Credit
+#
+# A credit is a gift certificate, introductory offer,  refund, or client payment redeemable as money
+#
 class Credit(models.Model):
     type = models.ManyToManyField('Tag')
     passphrase = models.CharField(maxlenth = 30)

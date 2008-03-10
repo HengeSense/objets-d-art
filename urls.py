@@ -17,7 +17,7 @@ urlpatterns = patterns('objetsdart.customer',
     (r'^ensemble/(?P<tag>.*)$', 'list_by_tag', {'prefix': 'ensemble/'}),
     (r'^difficulty/(?P<tag>\d+)$', 'list_by_tag', {'prefix': 'difficulty/'}),
 
-    (r'^.+$', 'objet_or_taglist'),
+    (r'^.+$', 'smart_list'), # Search clients, objets, or flat-pages:
 
     # Uncomment this for admin:
     (r'^admin/', include('django.contrib.admin.urls')),

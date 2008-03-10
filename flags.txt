@@ -44,6 +44,7 @@ composition:is_under_contract
 composition:is_out_of_print
 composition:is_commission
 composition:is_commission_draft
+composition:shipping:is_flat_rate
 
 CONTRACT FLAGS:
 ===============
@@ -81,6 +82,15 @@ cart:is_paid
 cart:is_fulfilled
 cart:is_bounced
 cart:is_problem
+
+cart:shipping:USPS_parcelpost
+cart:shipping:USPS_priority
+cart:shipping:USPS_express
+cart:shipping:DHL_standard
+cart:shipping:DHL_overnight (etc.)
+
+cart:payment:google_checkout
+cart:payment:check_moneyorder
 
 ITEM FLAGS:
 ===========
