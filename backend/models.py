@@ -28,7 +28,6 @@ class Objet(models.Model):
     created = models.DateField()
     coupons = models.ManyToManyField('Coupon')
     bulk_discount_threshold = models.IntegerField(default = 0) # 0 means no bulk discount
-    contract = models.ForeignKey('Contract') #TODO: Make sure to make a null contract
     price = models.FloatField(max_digits = 5, decimal_places = 2)
     length = models.FloatField(max_digits = 3, decimal_places = 1) # In inches
     width = models.FloatField(max_digits = 3, decimal_places = 1) # In inches
@@ -53,6 +52,7 @@ class Objet(models.Model):
 #
 class Contract(models.Model):
     # Contract basics
+    objet = models.ForeignKey('Objet') # Make an initial objet for each client in order to make initial contract
     title = models.CharField(maxlength = 500)
     date_created = models.DateField(auto_now_add = True)
     date_annulled = models.DateField(null = True)
@@ -61,7 +61,7 @@ class Contract(models.Model):
     signature_method = models.ManyToManyField('Tag')
     a_signature = models.TextField(blank = True) # Usually client
     b_signature = models.TextField(blank = True) # Usually MJS Publishing, may be customer
-    parent_contract = models.ForeignKey('self') #TODO: Make sure to make a null contract
+    inherits = models.ManyToManyField('self') 
     # Contract body
     duration = models.TextField(blank = True)
     termination = models.TextField(blank = True)
@@ -136,38 +136,17 @@ class Client(models.Model):
 	return join(' ', self.user.first_name, self.user.last_name)
 
 #####
-# Customer
-#
-# This model is tied to a user and represents a store customer
-#
-class Customer(models.Model):
-    user = models.ForeignKey(User)
-    shipping_address1 = models.CharField(blank = True, maxlength = 250)
-    shipping_address2 = models.CharField(blank = True, maxlength = 250)
-    shipping_city = models.CharField(blank = True, maxlength = 120)
-    shipping_state = models.USStateField(blank = True)
-    cart = models.ManyToManyField('Cart')
-    flags = models.ManyToManyField('Tag')
-
-    class Admin:
-	pass
-
-    def __str__(self):
-	return join(' ', self.user.first_name, self.user.last_name)
-
-#####
 # Cart
 #
-# The cart object belongs to a customer and contain as many 'item' objects as needed
+# The cart object belongs to a user and contain as many 'item' objects as needed
 #
 class Cart(models.Model):
+    owner = models.ForeignKey(User)
     title = models.CharField(maxlength = 50)
-    items = models.XMLField(schema_path = "/path/to/cartschema.rnc") # xml.dom.minidom
+    items = models.XMLField(schema_path = "/path/to/cartschema.rnc") # xml.dom.minidom - use this even if phone/mail order
     total = models.FloatField(max_digits = 5, decimal_places = 2)
-    shipping = models.ForeignKey('Tag')
-    payment = models.ManyToManyField('Tag')
     expires = models.DateField() # test: if ((expires - datetime.date.today()).days <= 0): delete this
-    flags = models.ManyToManyField('Tag')
+    tags = models.ManyToManyField('Tag')
 
     class Admin:
 	pass
@@ -178,12 +157,12 @@ class Cart(models.Model):
 # The commission object represents a commission tied to a score.
 #
 class Commission(models.Model):
-    customer = models.ForeignKey('Customer')
+    customer = models.ForeignKey(User)
     contract = models.ForeignKey('Contract')
     objet = models.ForeignKey('Objet')
     base = models.FloatField(max_digits = 6, decimal_places = 2)
     rate = models.FloatField(max_digits = 2, decimal_places = 1)
-    flags = models.ManyToManyField('Tag')
+    tags = models.ManyToManyField('Tag')
 
     class Admin:
 	pass
@@ -199,7 +178,7 @@ class Correspondence(model.Model)
     between = models.ManyToManyField(User)
     subject = models.CharField(maxlength = 500)
     message = models.TextField()
-    flags = models.ManyToManyField('Tag')
+    tags = models.ManyToManyField('Tag')
 
 #####
 # Coupon
@@ -213,7 +192,7 @@ class Coupon(models.Model):
     discount = models.IntegerField()
     begins = models.DateField()
     expires = models.DateField(blank = True) # test: if ((expires - datetime.date.today()).days <= 0): this.is_expired = True
-    flags = models.ManyToManyField('Tag')
+    tags = models.ManyToManyField('Tag')
 
     class Admin: 
 	pass
@@ -232,7 +211,7 @@ class Credit(models.Model):
     user_restrict = models.ManyToManyField(User) #TODO: Make sure to create a null user
     amount = models.FloatField(max_digits = 6, decimal_places = 2)
     expires = models.DateField(blank = True) # To be set when activated (i.e.: G = +1 year, I = +30 days, R = +1 year, P = +5 years)
-    flags = models.ManyToManyField('Tag')
+    tags = models.ManyToManyField('Tag')
 
     class Admin:
 	pass
