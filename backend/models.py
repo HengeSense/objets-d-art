@@ -216,9 +216,6 @@ class Credit(models.Model):
     class Admin:
 	pass
 
-    class Meta:
-	ordering = ['type', 'expires'
-
     def __str__(self):
 	if (self.user_restrict):
 	    u = join(' ', "for", self.user_restrict.first_name, self.user_restrict.last_name)
