@@ -32,6 +32,7 @@ class Objet(models.Model):
     length = models.FloatField(max_digits = 3, decimal_places = 1) # In inches
     width = models.FloatField(max_digits = 3, decimal_places = 1) # In inches
     tens_height = models.FloatField(max_digits = 3, decimal_places = 1) # The height of ten shippable objects in inches
+    tens_weight = models.FloatField(max_digits = 2, decimal_places = 1) # The weight of ten shippable objects in ounces
     copies_sold = models.IntegerField()
     thumbnail_file = models.FileField(upload_to = "ThumbData/%Y/%m")
     editable_file = models.FileField(upload_to = "ScoreFiles/%Y/%m") # Protect with .htaccess

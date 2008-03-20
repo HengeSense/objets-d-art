@@ -1,6 +1,21 @@
+##########################################################################
+#####
+##### googlecheckout.py - An implementation of the Google Checkout XML API
+#####	by Matt Scott
+#####
+##### This software is released under the GNU General Public License v.3
+##### Find out more here: < http://www.gnu.org/licenses/gpl.html >
+#####
+##########################################################################
+
 from xml.dom.minidom import *
 
-class BaseException:
+#####
+# Exception classes
+#
+# These classes are provided as fairly empty classes to throw as exceptions.
+#
+class GCBaseException:
     def __init__(self, error):
 	self.error = error
 
@@ -17,49 +32,114 @@ class MissingRequiredAttribute(BaseException):
 # Item class
 #
 # This 'empty' class acts as a data structure to describe an item
-# item_dict = {'name': '', 'description': '', 'unit price': '', 'quantity': '', 'sku': 'tax table': '', 'digital content': {'description': '', 'email delivery': '', 'key': '', 'url': '', 'display disposition': ''}, 'merchant-private-item-data': ''}
 #
 class Item:
-    def __init__(self, item_dict):
+    def __init__(self, item_dict = None, item_node = None):
+	if item_dict:
+	    self._parse_dict(item_dict)
+	elif item_node:
+	    self.node = item_node
+    def _parse_dict(self, item_dict):
+	"""_parse_dict builds a DOM object from a dict
+	    item_dict = {'name': '', 'description': '', 'unit price': '', 'quantity': '', 'sku': 'tax table': '', 'digital content': {'description': '', 'email delivery': '', 'key': '', 'url': '', 'display disposition': ''}, 'merchant-private-item-data': ''}"""
+
+	self.xml = Document()
+	self.node = self._xmldoc.createElement("item")
+
+	# These first four elements are required, so throw a fit if they're not around
 	try:
-	    self.title = item_dict['name']
-	except:
+	    item_name = self.xml.createElement("item-name")
+	    item_name.appendChild(self.xml.createTextNode(item_dict['name']))
+	    self.node.appendChild(item_name)
+	except KeyError:
 	    raise MissingRequiredElement("Element 'name' is required in the item dictionary")
 
 	try:
-	    self.description = item_dict['description']
-	except:
+	    item_desc = self.xml.createNode("item-description")
+	    item_desc.appendChild(self.xml.createTextNode(item_dict['description']))
+	    self.node.appendChild(item_desc)
+	except KeyError:
 	    raise MissingRequiredElement("Element 'description' is required in the item dictionary")
 
 	try:
-	   self.unit_price = item_dict['unit price']
-	except:
+	    unit_price = self.xml.createNode("unit-price")
+	    unit_price.appendChild(self.xml.createTextNode(item_dict['unit price']))
+	    self.node.appendChild(unit_price)
+	except KeyError:
 	    raise MissingRequiredElement("Element 'unit price' is required in the item dictionary")
 
 	try:
-	    self.quantity = item_dict['quantity']
-	except:
+	    quantity = self.xml.createNode("quantity")
+	    quantity.appendChild(self.xml.createTextNode(item_dict['quantity']))
+	    self.node.appendChild(unit_price)
+	except KeyError:
 	    raise MissingRequiredElement("Element 'quantity' is required in the item dictionary")
 
+	# These next elements are not required, so handle them gracefully
 	try:
-	    self.sku = item_dict['sku']
-	except:
-	    self.sku = None
+	    sku = self.xml.createNode("merchant-item-id")
+	    sku.appendChild(self.xml.createTextNode(item_dict['sku']))
+	    self.node.appendChild(sku)
+	except KeyError:
+	    pass
 
 	try:
-	    self.tax_table = item_dict['tax table']
-	except:
-	    self.tax_table = None
+	    tax_table = self.xml.createNode("tax-table-selector")
+	    tax_table.appendChild(self.xml.createTextNode(item_dict['tax_table']))
+	    self.node.appendChild(tax_table)
+	except KeyError:
+	    pass
 
 	try:
-	    self.digital_content = item_dict['digital content']
-	except:
-	    self.digital_content = None
-	   
+	    dc = item_dict['digital content']
+	    digital_content = self.xml.createNode("digital-content")
+
+	    # Since this is a dictionary, try to fetch each key for the digital-content tag - since all are optional, don't throw any exceptions
+	    try:
+	        if dc['description']:
+		    dc_desc = self.xml.createNode("description")
+		    dc_desc.appendChild(selfxml.createTextNode(dc['description']))
+		    digital_content.appendChild(dc_desc)
+	    except KeyError:
+	        pass
+	    try:
+		if dc['email delivery']:
+		    dc_email = self.xml.createNode("email-delivery")
+		    dc_email.appendChild(self.xml.createTextNode(dc['email delivery']))
+		    digital_content.appendChild(dc_email)
+	    except KeyError:
+	        pass
+	    try:
+	        if dc['key']:
+		    dc_key = self.xml.createNode("key")
+		    dc_key.appendChild(self.xml.createTextNode(dc['key']))
+		    digital_content.appendChild(dc_key)
+	    except KeyError:
+	        pass
+	    try:
+	        if dc['url']:
+		    dc_url = self.xml.createNode("url")
+		    dc_url.appendChild(self.xml.createTextNode(dc['url']))
+		    digital_content.appendChild(dc_url)
+	    except KeyError:
+	        pass
+	    try:
+	        if dc['display disposition']:
+		    dc_disp = self.xml.createNode("display-disposition")
+		    dc_disp.appendChild(self.xml.createTextNode(dc['display disposition']))
+		    digital_content.appendChild(dc_disp)
+	    except KeyError:
+	        pass
+	    self.node.appendChild(digital_content)
+	except KeyError:
+	    pass
+
 	try:
-	    self.private_data = item_dict['private data']
-	except:
-	    self.private_data = None
+	    private_data = xml.createNode("merchant-private-item-data")
+	    private_data.appendChild(self.xml.createTextNode(item_dict['private_data']))
+	    self.node.appendChild(private_data)
+	except KeyError:
+	    pass
 
 #####
 # Cart class
@@ -73,6 +153,19 @@ class Cart:
     #
     # These functions are pretty much only used internally, or at least transparently
     #
+
+    #####
+    # Shipping class
+    #
+    # Because this class is just a container for XML nodes that are handled internally, it can be empty
+    #
+    class _shipping:
+	def __init__(self, node):
+	    if node:
+		self.node = node
+	    else:
+		 raise MissingRequiredElement("An empty node was passed to shipping: logic error")
+
     empty_cart = """<?xml version="1.0" encoding="UTF-8"?>
 
 <checkout-shopping-cart xmlns="http://checkout.google.com/schema/2">
@@ -86,32 +179,23 @@ class Cart:
       </shipping-methods>
     </merchant-checkout-flow-support>
   </checkout-flow-support>
+  <order-processing-support>
+  </order-processing-support>
 </checkout-shopping-cart>"""
 
-    def __init__(self, to_parse = empty_cart):
+    def __init__(self, to_parse = None):
 	"""initializes an instance of the Cart object
 	   to_parse is a STRING to be parsed by parseString"""
-	self.xml_cart = xml.dom.minidom.parseString(to_parse)
 	self.index = 0
 	self.item_list = ()
-	for item in self.xml_cart.getElementsByTagName("item"):
-	    for node in item.getElementsByTagName("item-name")[0]:
-		if node.nodeType == node.TEXT_NODE:
-		    name = node.data
-	    for node in item.getElementsByTagName("item-description")[0]:
-		if node.nodeType == node.TEXT_NODE:
-		    description = node.data
-	    for node in item.getElementsByTagName("unit-price")[0]:
-		if node.nodeType == node.TEXT_NODE:
-		    unit_price = node.data
-	    for node in item.getElementsByTagName("quantity")[0]:
-		if node.nodeType == node.TEXT_NODE:
-		    quantity = node.data
-	    for node in item.getElementsByTagName("merchant-item-id")[0]:
-		if node.nodeType == node.TEXT_NODE:
-		    sku = node.data
-	    self.item_list.append(Item({'name': name, 'description': description, 'unit price': unit_price, 'quantity': quantity, 'sku': sku}))
-
+	self.shipping_list = ()
+	if to_parse:
+	    self.xml_cart = xml.dom.minidom.parseString(to_parse)
+	    for item in self.xml_cart.getElementsByTagName("item"):
+		self.item_list.append(Item(item_node = item))
+	    for shipping in self.xml_cart.getElementsbyTagName("shipping-methods")[0].childNodes:
+		self.shipping_list.append(Cart._shipping(node = shipping))
+	self.xml_cart = xml.dom.minidom.parseString(empty_cart)
 
     def __iter__(self):
 	"""iterates through items in the cart
@@ -120,6 +204,10 @@ class Cart:
 
     def next(self):
 	""""""
+	if self.index >= len(self.item_list):
+	    raise StopIteration
+	self.index = self.index + 1
+	return self.item_list[self.index]
     
     #####
     # Local functions
@@ -130,109 +218,70 @@ class Cart:
 	"""adds an item to the cart
 	   item is an instance of the Item class"""
 	self.item_list.append(item)
-    
-    def del_item(self, index):
+
+    def del_item(self, idx):
 	"""deletes an item from the cart
-	   index is the index of the item in item_list"""
-	try:
-	    del self.item_list[index]
-	except IndexError:
-	    raise IndexError #XXX Will this be passed on?
+	   idx is the index of the item in item_list"""
+	self.item_list[idx].node.unlink()
+	del self.item_list[idx]
 
-    def set_shipping_flat_rate(self, rate):
+    def add_shipping_flat_rate(self, rate):
+	"""adds a flat-rate shipping method
+	   shipping methods are built into a list and only added to the cart when serialize() is called"""
+	self.xml_cart.createElement
+
     def set_shipping_merchant_calculated(self, rate):
-    def set_shipping_carrier_calculated(self, carrier, default_cost):
-    def set_shiping_pickup(self):
-    def set_shipping_digital(self):
 
+    def set_shipping_carrier_calculated(self, carrier, default_cost):
+
+    def set_shiping_pickup(self):
+
+    def set_shipping_digital(self):
+	
+    def del_shipping(self, idx):
+	"""deletes a shipping method from the list
+	   idx is the index of the item in shipping_list"""
+	self.shipping_list[idx].node.unlink()
+	del self.shipping_list[idx]
+
+    def del_all_shipping(self):
+	""" deletes all shipping methods from the list
+	    useful particularly for not having to search through DOM objects for a particular shipping method to delete"""
+	i = 0
+	for i in len(self.shipping_list) - 1:
+	    self.del_shipping(i)
+
+    def set_request_auth_details(self, value = "False"):
+	tag = self.xml_cart.createElement("request-initial-auth-details")
+	tag.appendChild(self.xml_cart.createTextNode(value)
+	self.xml_cart.getElementsByTagName("order-processing-support")[0].appendChild(tag)
     
     def serialize(self):
 	"""serializes the XML data
 	   the DOM is first built, and then toxml() is called"""
-	xml = parseString(self.empty_cart)
-	items = xml.getElementsByTagName("items")[0]
-
-	# Loop through all the items in the list and build a new container element to contain all the required and optional parts
-	for item in item_list:
-	    new_item = xml.createNode("item")
-
-	    item_name = xml.createElement("item-name")
-	    item_name.appendChild(xml.createTextNode(item.name))
-	    new_item.appendChild(item_name)
-
-	    item_desc = xml.createNode("item-description")
-	    item_desc.appendChild(xml.createTextNode(item.description))
-	    new_item.appendChild(item_desc)
-
-	    unit_price = xml.createNode("unit-price")
-	    unit_price.appendChild(xml.createTextNode(item.unit_price))
-	    new_item.appendChild(unit_price)
-
-	    quantity = xml.createNode("quantity")
-	    quantity.appendChild(xml.createTextNode(item.quantity))
-	    new_item.appendChild(unit_price)
-
-	    if item.sku:
-		sku = xml.createNode("merchant-item-id")
-		sku.appendChild(xml.createTextNode(item.sku))
-		new_item.appendChild(sku)
-
-	    if item.tax_table:
-		tax_table = xml.createNode("tax-table-selector")
-		tax_table.appendChild(xml.createTextNode(item.tax_table))
-		new_item.appendChild(tax_table)
-
-	    if item.digital_content:
-		digital_content = xml.createNode("digital_content")
-		# Since this is a dictionary, try to fetch each key for the digital-content tag - since all are optional, don't throw any exceptions
-		try:
-		    if item.digital_content['description']:
-			dc_desc = xml.createNode("description")
-			dc_desc.appendChild(xml.createTextNode(item.digital_content['description']))
-			digital_content.appendChild(dc_desc)
-		except:
-		    pass
-		try:
-		    if item.digital_content['email delivery']:
-			dc_email = xml.createNode("email-delivery")
-			dc_email.appendChild(xml.createTextNode(item.digital_content['email delivery']))
-			digital_content.appendChild(dc_email)
-		except:
-		    pass
-		try:
-		    if item.digital_content['key']:
-			dc_key = xml.createNode("key")
-			dc_key.appendChild(xml.createTextNode(item.digital_content['key']))
-			digital_content.appendChild(dc_key)
-		except:
-		    pass
-		try:
-		    if item.digital_content['url']:
-			dc_url = xml.createNode("url")
-			dc_url.appendChild(xml.createTextNode(item.digital_content['url']))
-			digital_content.appendChild(dc_url)
-		except:
-		    pass
-		try:
-		    if item.digital_content['display disposition']:
-			dc_disp = xml.createNode("display-disposition")
-			dc_disp.appendChild(xml.createTextNode(item.digital_content['display disposition']))
-			digital_content.appendChild(dc_disp)
-		except:
-		    pass
-		new_item.appendChild(digital_content)
-
-	    if item.private_data:
-		private_data = xml.createNode("merchant-private-item-data")
-		private_data.appendChild(xml.createTextNode(item.private_data))
-		new_item.appendChild(private_data)
-
-	    items.appendChild(new_item)
-
+	for item in self.item_list:
+	    self.xml_cart.getElementsByTagName("items")[0].appendChild(item.node)
+	for shipping in self.shipping_list:
+	    self.xml_cart.getElementsbyTagName("shipping-methods")[0].appendChild(shipping.node)
+	self.xml_cart.getElementsByTagName("shopping-cart")[0].appendChild(items)
 	return self.xml_cart.toxml("utf-8")
 
+    #####
+    # Remote functions
+    #
+    # These are functions that actually send data to a remote server
+    #
 
-class Checkout:
+class Interaction:
+    def __init__(self, merchant_id, merchant_key, xml_data, testing=False):
+	self.xml_data = xml_data
+
+    def hello(self):
+    def diagnose(self):
+    def commit(self):
+
+class Checkout(Interaction):
+
 
 class Calculation:
 
