@@ -1,6 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+###########################
+##### Backend functionality
+###########################
+
 #####
 # Tag
 # 
@@ -223,3 +227,43 @@ class Credit(models.Model):
 	else:
 	    u = ''
 	return join(' ', self.type, u, str(self.id) + ':', '$' + self.amount)
+
+##########################
+##### Ledger functionality
+##########################
+
+#####
+# Transaction
+#
+# This model describes each sort of transaction that can occur within the business.
+#
+class Transaction(models.Model):
+    TYPE_CHOICES = (
+	('S', 'Sale'),     # Positive
+	('P', 'Payment'),  # Negative
+	('C', 'Credit'),   # Negative
+	('E', 'Expense'),  # Negative
+	('A', 'Purchase'), # Negative
+    )
+    amount = models.FloatType(max_digits = 6, decimal_places = 2)
+    type = models.CharField(maxlength = 1, choices = TYPE_CHOICES)
+    date_time = models.DateTimeFiled()
+    second_party = models.TextField()
+    explanation = models.TextField()
+
+    class Admin:
+	pass
+
+############################
+##### Callback functionality
+############################
+
+#####
+# CheckoutBackup
+#
+# Stores backups of transactions with Google Checkout
+#
+class CheckoutBackup(models.Model):
+    serial_number = models.CharField(maxlength = 120, primary_key = true)
+    request = models.TextField()
+    response = models.TextField()
