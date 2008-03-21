@@ -45,13 +45,14 @@ composition:is_out_of_print
 composition:is_commission
 composition:is_commission_draft
 composition:shipping:is_flat_rate
+composition:bulk_discount_applies
 
 CONTRACT FLAGS:
 ===============
-contract:coupon:class_A (plus B, C, and D)
-contract:coupon:class_B (plus C and D)
-contract:coupon:class_C (plus D)
-contract:coupon:class_D
+contract:coupon:class_A (plus B, C, and D) (site-wide)
+contract:coupon:class_B (plus C and D) (sale)
+contract:coupon:class_C (plus D) (client)
+contract:coupon:class_D (composition)
 contract:coupon:none
 
 contract:printing:on_demand
@@ -67,6 +68,8 @@ contract:is_annulled
 contract:is_active
 contract:is_template
 contract:is_base_contract
+
+contract:pricing:DefaultPricing (or whatever the name of the pricing class is)
 
 CUSTOMER FLAGS:
 ===============

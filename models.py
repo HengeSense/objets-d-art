@@ -16,10 +16,10 @@ class Tag(models.Model):
     description = models.TextField(blank = True)
     
     class Admin:
-	pass
+    	pass
 
     def __str__(self):
-	return self.description
+	    return self.description
 
 #####
 # Objet
@@ -30,14 +30,11 @@ class Objet(models.Model):
     title = models.CharField(maxlength = 250)
     duration = models.FloatField(max_digits = 5, decimal_places = 2)
     created = models.DateField()
-    coupons = models.ManyToManyField('Coupon')
-    bulk_discount_threshold = models.IntegerField(default = 0) # 0 means no bulk discount
     price = models.FloatField(max_digits = 5, decimal_places = 2)
     length = models.FloatField(max_digits = 3, decimal_places = 1) # In inches
     width = models.FloatField(max_digits = 3, decimal_places = 1) # In inches
     tens_height = models.FloatField(max_digits = 3, decimal_places = 1) # The height of ten shippable objects in inches
     tens_weight = models.FloatField(max_digits = 2, decimal_places = 1) # The weight of ten shippable objects in ounces
-    copies_sold = models.IntegerField()
     thumbnail_file = models.FileField(upload_to = "ThumbData/%Y/%m")
     editable_file = models.FileField(upload_to = "ScoreFiles/%Y/%m") # Protect with .htaccess
     viewable_file = models.FileField(upload_to = "ScorchData/%Y/%m")
@@ -45,10 +42,10 @@ class Objet(models.Model):
     tags = models.ManyToManyField('Tag')
 
     class Admin:
-	pass
+	    pass
 
     def __str__(self):
-	return self.title
+	    return self.title
 
 #####
 # Contract
@@ -72,29 +69,35 @@ class Contract(models.Model):
     termination = models.TextField(blank = True)
     breach = models.TextField(blank = True)
     pricing = models.TextField(blank = True)
-    coupons = models.ManyToManyField('Tag')
+    pricing_formula = models.ForeignKey('Tag') # tag refers to a module with a standard-named function to figure ratio of profits
+    coupon_status = models.ManyToManyField('Tag')
     bulk_discount = models.IntegerField(default = 0)
     printing = models.TextField(blank = True)
     payment = models.TextField(blank = True)
     rights = models.TextField(blank = True)
+    # Business details
+    coupons = models.ManyToManyField('Coupon')
+    bulk_discount_threshold = models.IntegerField(default = 0) # 0 means no bulk discount
+    copies_sold = models.IntegerField()
+    since_previous_payment = models.IntegerField(default = 0)
     tags = models.ManyToManyField('Tag')
 
     class Admin:
-	pass
+	    pass
 
     def __str__(self): #XXX: rewrite for Tag model
-	if (self.is_active):
-	    active = 'Active'
-	else:
-	    if (self.is_annulled):
-		active = 'Annulled'
+	    if (self.is_active):
+	        active = 'Active'
 	    else:
-		active = 'Inactive'
-	if (self.is_addendum):
-	    addendum = '(addendum)'
-	else:
-	    addendum = ''
-	return join(' ', (self.title, 'between', a, '&', b, '-', self.date_created, addendum, active))
+	        if (self.is_annulled):
+	        	active = 'Annulled'
+	        else:
+		        active = 'Inactive'
+	    if (self.is_addendum):
+	        addendum = '(addendum)'
+	    else:
+	        addendum = ''
+    	return join(' ', (self.title, 'between', a, '&', b, '-', self.date_created, addendum, active))
 												      
 #####
 # Application
@@ -135,10 +138,10 @@ class Client(models.Model):
     tags = models.ManyToManyField('Tag')
 
     class Admin:
-	pass
+	    pass
 
     def __str__(self):
-	return join(' ', self.user.first_name, self.user.last_name)
+	    return join(' ', self.user.first_name, self.user.last_name)
 
 #####
 # Cart
@@ -154,7 +157,7 @@ class Cart(models.Model):
     tags = models.ManyToManyField('Tag')
 
     class Admin:
-	pass
+    	pass
 
 #####
 # Commission
@@ -170,7 +173,7 @@ class Commission(models.Model):
     tags = models.ManyToManyField('Tag')
 
     class Admin:
-	pass
+	    pass
 
 #####
 # Correspondence
@@ -200,10 +203,10 @@ class Coupon(models.Model):
     tags = models.ManyToManyField('Tag')
 
     class Admin: 
-	pass
+    	pass
 
     def __str__(self):
-	return self.discount + '% off!  ' + self.description
+	    return self.discount + '% off!  ' + self.description
 
 #####
 # Credit
@@ -219,14 +222,14 @@ class Credit(models.Model):
     tags = models.ManyToManyField('Tag')
 
     class Admin:
-	pass
+    	pass
 
     def __str__(self):
-	if (self.user_restrict):
-	    u = join(' ', "for", self.user_restrict.first_name, self.user_restrict.last_name)
-	else:
-	    u = ''
-	return join(' ', self.type, u, str(self.id) + ':', '$' + self.amount)
+	    if (self.user_restrict):
+	        u = join(' ', "for", self.user_restrict.first_name, self.user_restrict.last_name)
+    	else:
+	        u = ''
+    	return join(' ', self.type, u, str(self.id) + ':', '$' + self.amount)
 
 ##########################
 ##### Ledger functionality
@@ -252,7 +255,7 @@ class Transaction(models.Model):
     explanation = models.TextField()
 
     class Admin:
-	pass
+	    pass
 
 ############################
 ##### Callback functionality
@@ -267,3 +270,8 @@ class CheckoutBackup(models.Model):
     serial_number = models.CharField(maxlength = 120, primary_key = true)
     request = models.TextField()
     response = models.TextField()
+
+    class Admin:
+        pass
+
+#
