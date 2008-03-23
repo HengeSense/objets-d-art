@@ -9,7 +9,6 @@
 ##########################################################################
 
 from xml.dom.minidom import *
-import urllib2
 
 #####
 # Exception classes
@@ -23,6 +22,12 @@ class MissingRequiredElement(GCBaseException):
     pass
 
 class MissingRequiredAttribute(GCBaseException):
+    pass
+
+class XMLError(GCBaseException):
+    pass
+
+class ServerError(GCBaseException):
     pass
 
 #####
@@ -288,24 +293,42 @@ class Interaction:
 
     def _postinit(self): pass
 
-    def hello(self):
+    def _hello(self):
         xml_temp = xml.dom.minidom.parseString('<hello xmlns="http://checkout.google.com/schema/2" />')
-        self._write(xml_temp.toxml())
+        return self._write(xml_temp.toxml())
+    def test_server(self):
+        if ~the root node is bye~: #XXX
+            return True
+        else:
+            return False
 
-    def diagnose(self):
+    def _diagnose(self):
         url_temp = self.url + '/diagnose'
-        self._write(self.xml_data, url = url_temp)
+        return self._write(self.xml_data, url = url_temp)
+    def test_request(self):
+        response = self._diagnose()
+        if response.documentElement.tagname == "diagnosis":
+            return (True, response)
+        else:
+            return (False, response)
 
-    def commit(self):
-        self._write(self.xml_data)
+    def _commit(self):
+        return self._write(self.xml_data)
+    def send_request(self): 
+        import re
+        response = self._commit()
+        exec("self.%s(response)" % '_' + re.sub('-', '_', response.documentElement.tagname)) # SAX made simple
 
     def _write(self, xml, url = self.url):
+        import urllib2, base64
         request = urllib2.Request(url, data = xml)
         request.add_header('Authorization', 'Basic ' + base64.b64encode(self.merchant_id + ':' + self.merchant_key))
         request.add_header('Content-type', 'application/xml;charset=UTF-8')
         request.add_header('Accept', 'application/xml;charset=UTF-8')
-        response = urllib2.urlopen(request)
-        
+        try:
+            response = urllib2.urlopen(request)
+        except urllib2.HTTPError, e:
+            raise ServerError(str(e))
         return xml.dom.minidom.parseString(response.read())
 
 class Checkout(Interaction):
@@ -315,12 +338,18 @@ class Checkout(Interaction):
         else:
             self.url = "https://checkout.google.com/api/checkout/v2/merchantCheckout/Merchant/" + self.merchant_id
 
+    def send_request(self):
+        response = self._commit()
+
 class Calculation:
     def _postinit(self):
         if self.testing is True:
             self.url = "" + self.merchant_id
         else:
             self.url = "" + self.merchant_id
+
+    def send_request(self):
+        x = self._commit()
 
 class Notification: pass
     def _postinit(self):
@@ -329,9 +358,15 @@ class Notification: pass
         else:
             self.url = "" + self.merchant_id
 
+    def send_request(self):
+        x = self._commit()
+
 class Processing: pass
     def _postinit(self):
         if self.testing is True:
             self.url = "https://sandbox.google.com/checkout/api/checkout/v2/request/Merchant/" + self.merchant_id
         else:
             self.url = "https://checkout.google.com/api/checkout/v2/request/Merchant/" + self.merchant_id
+
+    def send_request(self):
+        x = self._commit()
