@@ -73,7 +73,7 @@ class Contract(models.Model):
     coupon_status = models.ManyToManyField('Tag')
     bulk_discount = models.IntegerField(default = 0)
     printing = models.TextField(blank = True)
-    payment = models.TextField(blank = True)
+    payment = models.ForeignKey('Tag') # tag refers to a module with a standard-named function that will notify the business to pay client
     rights = models.TextField(blank = True)
     # Business details
     coupons = models.ManyToManyField('Coupon')
@@ -134,7 +134,8 @@ class Client(models.Model):
     commissions = models.ManyToManyField('Commission')
     coupons = models.ManyToManyField('Coupon')
     contracts = models.ManyToManyField('Contract')
-    balance = models.FloatField(max_digits = 8, decimal_places = 2)
+    balance = models.FloatField(max_digits = 5, decimal_places = 2)
+    total_earnings = models.FloatField(max_digits = 8, decimal_places = 2)
     tags = models.ManyToManyField('Tag')
 
     class Admin:
@@ -194,7 +195,7 @@ class Correspondence(model.Model)
 # Coupons are percentage-based discounts applicable to certain objets
 #
 class Coupon(models.Model):
-    coupon_code = models.CharField(maxlength = 30)
+    coupon_code = models.CharField(maxlength = 30, primary_key = True)
     type =  models.ManyToManyField('Tag')
     description = models.CharField(maxlength = 500)
     discount = models.IntegerField()
@@ -230,6 +231,14 @@ class Credit(models.Model):
     	else:
 	        u = ''
     	return join(' ', self.type, u, str(self.id) + ':', '$' + self.amount)
+
+#####
+# Notifications
+#
+# Notifications act as tasks for the business to deal with, such as items to ship or submissions to review.
+class Notification(models.Model):
+    tags = models.ManyToManyField('Tag')
+    data = models.XMLField('/path/to/notifications.rnc')
 
 ##########################
 ##### Ledger functionality

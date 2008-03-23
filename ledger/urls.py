@@ -5,7 +5,9 @@ urlpatterns = patterns('project.objetsdart.ledger.views',
 
     # Display ledger - query string: 'output_format' defaults to HTML, but
     # can also be 'XML', 'LaTeX', 'PDF' or 'CSV'; 'display_negatives' defaults to
-    # 'parentheses', but can be '-', 'red', or 'none' (i.e. for two-column)
+    # 'parentheses', but can be '-', 'red', or 'none' (i.e. for two-column);
+    # 'type' defaults to 'all', but can be 'sale', 'payment', 'credit',
+    # 'expense', or 'purchase'
     (r'^(?P<year>\d{4})/$', 'display_ledger'),
     (r'^(?P<year>\d{4})/q(?P<quarter>[1234])/$', 'display_ledger'),
     (r'^(?P<year>\d{4})/w(?P<week>\d{2})/$', 'display_ledger'),

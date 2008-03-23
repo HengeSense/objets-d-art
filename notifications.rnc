@@ -1,0 +1,51 @@
+element notification {
+    attribute xmlns { "http://mjs-svc.com/schema/notifications" },
+    attribute type { "client" | "problem-cart" | "application" | "order" },
+    attribute urgency { "high" | "normal" | "low" },
+    attribute status { "unresolved" | "partially resolved" | "resolved" },
+    element client {
+        attribute client-id { text },
+        element submission {
+            attribute submission-id { text },
+            text
+        }?,
+        element coupon {
+            attribute code { text },
+            attribute type { "C" | "D" },
+            element timeframe {
+                attribute start { text },
+                attribute end { text },
+                empty
+            },
+            element description {
+                text
+            }
+        }?,
+        element payment {
+            attribute type { "scheduled" | "requested" },
+            attribute method { "mailed" | "google checkout" | "paypal" | "store credit" },
+            text
+        }?,
+        element report {
+            attribute type { "quarterly" | "yearly" | "W-2" | "requested" },
+            attribute format { "mailed" | "emailed PDF" },
+            text?
+        }?
+    }?,
+    element application {
+        attribute id { text },
+        attribute status { "new" | "approved" | "rejected" },
+        text
+    }?,
+    element problem-cart {
+        attribute customer-id { text },
+        attribute cart-id { text },
+        element problem { text },
+        element description { text }
+    }?,
+    element order {
+        attribute cart-id { text },
+        attribute gc-state { text },
+        ##XXX Find out what Checkout sends when an order is processed
+    }?
+}
