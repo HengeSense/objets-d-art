@@ -6,6 +6,11 @@ Tag key:
     tag/tag = external tag
     tag:tag = internal tag
 
+USER FLAGS:
+===========
+user:is_staff (can view business data)
+user:is_manager (can view, add, modify, and delete business data)
+
 COMPOSITION FLAGS:
 ==================
 ensemble/choral
@@ -36,6 +41,9 @@ difficulty/2
 difficulty/3
 difficulty/4
 difficulty/5
+
+region/USA/[state code]
+etc.
 
 composition:is_in_review
 composition:is_accepted
@@ -94,13 +102,6 @@ cart:shipping:DHL_overnight (etc.)
 
 cart:payment:google_checkout
 cart:payment:check_moneyorder
-
-ITEM FLAGS:
-===========
-item:composition
-item:commission
-item:coupon
-item:credit
 
 COMMISSION FLAGS:
 =================

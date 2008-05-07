@@ -186,23 +186,26 @@ class Cart:
   </order-processing-support>
 </checkout-shopping-cart>"""
 
-    def __init__(self, to_parse = None):
-    """initializes an instance of the Cart object
-       to_parse is a STRING to be parsed by parseString"""
-    self.index = 0
-    self.item_list = ()
-    self.shipping_list = ()
+    def __init__(self, to_parse = None, merchant_id = None, merchant_key = None, testing = False):
+        """initializes an instance of the Cart object
+           to_parse is a STRING to be parsed by parseString"""
+        self.merchant_id = merchant_id
+        self.merchant_key = merchant_key
+        self.testing = testing
+        self.index = 0
+        self.item_list = ()
+        self.shipping_list = ()
 
-    # if we have data in the cart, take it apart and keep it in
-    # easier-to-process lists
-    if to_parse:
-        self.xml_cart = xml.dom.minidom.parseString(to_parse)
-        for item in self.xml_cart.getElementsByTagName("item"):
-            self.item_list.append(Item(item_node = item))
-        for shipping in self.xml_cart.getElementsbyTagName("shipping-methods")[0].childNodes:
-            self.shipping_list.append(Cart._shipping(node = shipping))
-    # Start with an empty cart that can be repopulated with lists.
-    self.xml_cart = xml.dom.minidom.parseString(empty_cart)
+        # if we have data in the cart, take it apart and keep it in
+        # easier-to-process lists
+        if to_parse:
+            self.xml_cart = xml.dom.minidom.parseString(to_parse)
+            for item in self.xml_cart.getElementsByTagName("item"):
+                self.item_list.append(Item(item_node = item))
+            for shipping in self.xml_cart.getElementsbyTagName("shipping-methods")[0].childNodes:
+                self.shipping_list.append(Cart._shipping(node = shipping))
+        # Start with an empty cart that can be repopulated with lists.
+        self.xml_cart = xml.dom.minidom.parseString(empty_cart)
 
     def __iter__(self):
         """ iterates through items in the cart
@@ -235,15 +238,15 @@ class Cart:
     def add_shipping_flat_rate(self, rate):
         """ adds a flat-rate shipping method
             shipping methods are built into a list and only added to the cart when serialize() is called"""
-        self.xml_cart.createElement
+        pass
 
-    def set_shipping_merchant_calculated(self, rate): pass
+    def add_shipping_merchant_calculated(self, rate): pass
 
-    def set_shipping_carrier_calculated(self, carrier, default_cost): pass
+    def add_shipping_carrier_calculated(self, carrier, default_cost): pass
 
-    def set_shiping_pickup(self): pass
+    def add_shiping_pickup(self): pass
 
-    def set_shipping_digital(self): pass
+    def add_shipping_digital(self): pass
     
     def del_shipping(self, idx):
         """ deletes a shipping method from the list
@@ -278,11 +281,18 @@ class Cart:
     #
     # These are functions that actually send data to a remote server
     #
-    def diagnose(self): pass
-    def test(self): pass
-    def commit(self): pass
+    def diagnose(self):
+        return Interaction(self.merchant_id, self.merchant_key, self.serialize(), self.testing).test_request()
+
+    def test(self):
+        return Interaction(self.merchant_id, self.merchant_key, self.serialize(), self.testing).test_server()
+
+    def commit(self):
+        return Interaction(self.merchant_id, self.merchant_key, self.serialize(), self.testing)._commit()
 
 class Interaction:
+    """ Interaction class
+        Subclass me and define self.url!"""
     def __init__(self, merchant_id, merchant_key, xml_data, testing = False):
         self.xml_data = xml_data
         self.testing = testing
@@ -297,7 +307,8 @@ class Interaction:
         xml_temp = xml.dom.minidom.parseString('<hello xmlns="http://checkout.google.com/schema/2" />')
         return self._write(xml_temp.toxml())
     def test_server(self):
-        if ~the root node is bye~: #XXX
+        response = self._hello()
+        if response.documentElement.tagname == 'bye': #XXX
             return True
         else:
             return False
@@ -331,7 +342,7 @@ class Interaction:
             raise ServerError(str(e))
         return xml.dom.minidom.parseString(response.read())
 
-class Checkout(Interaction):
+this_is_a_bad_idea = """class Checkout(Interaction):
     def _postinit(self):
         if self.testing is True:
             self.url = "https://sandbox.google.com/checkout/api/checkout/v2/merchantCheckout/Merchant/" + self.merchant_id
@@ -369,4 +380,4 @@ class Processing: pass
             self.url = "https://checkout.google.com/api/checkout/v2/request/Merchant/" + self.merchant_id
 
     def send_request(self):
-        x = self._commit()
+        x = self._commit()"""

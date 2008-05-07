@@ -22,11 +22,11 @@ class Tag(models.Model):
 	    return self.description
 
 #####
-# Objet
+# Score
 # 
-# This model describes a single distributable object, along with ways to access it from both Client and Customer side.
+# This model describes a single score, along with ways to access it from both Client and Customer side.
 #
-class Objet(models.Model):
+class Score(models.Model):
     title = models.CharField(maxlength = 250)
     duration = models.FloatField(max_digits = 5, decimal_places = 2)
     created = models.DateField()
@@ -39,6 +39,7 @@ class Objet(models.Model):
     editable_file = models.FileField(upload_to = "ScoreFiles/%Y/%m") # Protect with .htaccess
     viewable_file = models.FileField(upload_to = "ScorchData/%Y/%m")
     printable_file = models.FileField(upload_to = "PrintData/%Y/%m") # Protect with .htaccess
+    contract = models.ForeignKey('Contract')
     tags = models.ManyToManyField('Tag')
 
     class Admin:
@@ -50,19 +51,15 @@ class Objet(models.Model):
 #####
 # Contract
 #
-# This model represents a contract tied to an individual or a object, keeping all the information in the database for different output formats
+# This model represents a contract tied to an individual or a score, keeping all the information in the database for different output formats
 #
 class Contract(models.Model):
     # Contract basics
-    objet = models.ForeignKey('Objet') # Make an initial objet for each client in order to make initial contract
     title = models.CharField(maxlength = 500)
     date_created = models.DateField(auto_now_add = True)
     date_annulled = models.DateField(null = True)
     a = models.ForeignKey(User)
-    b = models.ForeignKey(User)
-    signature_method = models.ManyToManyField('Tag')
-    a_signature = models.TextField(blank = True) # Usually client
-    b_signature = models.TextField(blank = True) # Usually MJS Publishing, may be customer
+    b = models.ForeignKey(User) #Publishing company or commissioner
     inherits = models.ManyToManyField('self') 
     # Contract body
     duration = models.TextField(blank = True)
@@ -130,7 +127,7 @@ class Client(models.Model):
     user = models.ForeignKey(User)
     profile = models.TextField(blank = True)
     bio = models.TextField(blank = True)
-    works = models.ManyToManyField('Objet')
+    works = models.ManyToManyField('Score')
     commissions = models.ManyToManyField('Commission')
     coupons = models.ManyToManyField('Coupon')
     contracts = models.ManyToManyField('Contract')
@@ -141,8 +138,13 @@ class Client(models.Model):
     class Admin:
 	    pass
 
+    class Meta:
+        permissions = (
+                ("is_client", "User is a client"),
+        )
+
     def __str__(self):
-	    return join(' ', self.user.first_name, self.user.last_name)
+	    return self.user.get_full_name()
 
 #####
 # Cart
@@ -168,7 +170,7 @@ class Cart(models.Model):
 class Commission(models.Model):
     customer = models.ForeignKey(User)
     contract = models.ForeignKey('Contract')
-    objet = models.ForeignKey('Objet')
+    score = models.ForeignKey('Score')
     base = models.FloatField(max_digits = 6, decimal_places = 2)
     rate = models.FloatField(max_digits = 2, decimal_places = 1)
     tags = models.ManyToManyField('Tag')
@@ -177,22 +179,9 @@ class Commission(models.Model):
 	    pass
 
 #####
-# Correspondence
-#
-# This class represents a communcation between two or more people.
-#
-class Correspondence(model.Model)
-    when = models.DateTimeField(auto_now_add = True)
-    creator = models.ForeignKey(User)
-    between = models.ManyToManyField(User)
-    subject = models.CharField(maxlength = 500)
-    message = models.TextField()
-    tags = models.ManyToManyField('Tag')
-
-#####
 # Coupon
 # 
-# Coupons are percentage-based discounts applicable to certain objets
+# Coupons are percentage-based discounts applicable to certain scores
 #
 class Coupon(models.Model):
     coupon_code = models.CharField(maxlength = 30, primary_key = True)
@@ -240,6 +229,9 @@ class Notification(models.Model):
     tags = models.ManyToManyField('Tag')
     data = models.XMLField('/path/to/notifications.rnc')
 
+    class Admin:
+        pass
+
 ##########################
 ##### Ledger functionality
 ##########################
@@ -251,11 +243,11 @@ class Notification(models.Model):
 #
 class Transaction(models.Model):
     TYPE_CHOICES = (
-	('S', 'Sale'),     # Positive
-	('P', 'Payment'),  # Negative
-	('C', 'Credit'),   # Negative
-	('E', 'Expense'),  # Negative
-	('A', 'Purchase'), # Negative
+    	('S', 'Sale'),     # Positive
+	    ('P', 'Payment'),  # Negative
+    	('C', 'Credit'),   # Negative
+	    ('E', 'Expense'),  # Negative
+    	('A', 'Purchase'), # Negative
     )
     amount = models.FloatType(max_digits = 6, decimal_places = 2)
     type = models.CharField(maxlength = 1, choices = TYPE_CHOICES)

@@ -5,16 +5,23 @@ urlpatterns = patterns('project.objetsdart.customer.views',
     (r'^news/?(?P<page>\d*)/?', 'news'),
     (r'^sales/?$', 'sales'),
 
-    (r'^(simple)?search/?$', 'simple_search'),
+    (r'^search/?$', 'simple_search'),
     (r'^powersearch/?$', 'power_search'),
 
-    (r'events/?$', 'calendar'),
+    (r'^events/?$', 'calendar'),
 
-    (r'^objet/(?P<id>\d+)/?$', 'get_objet_by_id'),
-    (r'^objet/(?P<slug>[a-z\-]+)/?$', 'get_objet_by_slug'),
-    (r'^(creator|client|artist|composer)/(?P<user_name>.+)/?$', 'get_creator'),
+    (r'^score/(?P<id>\d+)/?$', 'get_objet_by_id'),
+    (r'^score/(?P<slug>[a-z\-]+)/?$', 'get_objet_by_slug'),
+    (r'^composer/(?P<user_name>.+)/?$', 'get_creator'),
+    (r'^composer/(?P<user_name>[^/]+)/commission/?$', 'commission_inquiry'),
 
-    (r'^category/(?P<tag>.*)$', 'list_by_tag', {'prefix': 'category/'}),
-    (r'^ensemble/(?P<tag>.*)$', 'list_by_tag', {'prefix': 'ensemble/'}),
-    (r'^difficulty/(?P<tag>\d+)$', 'list_by_tag', {'prefix': 'difficulty/'}),
+    (r'^categories/$', 'list_public_tags'),
+    (r'^(?P<tag>category/.*)$', 'list_by_tag'),
+    (r'^(?P<tag>ensemble/.*)$', 'list_by_tag'),
+    (r'^(?P<tag>difficulty/\d+)$', 'list_by_tag'),
+    (r'^composers/$', 'list_by_composer'),
+
+    (r'^cart/(?<cart_name>[a-z\-]+)/?$', 'handle_cart'),
+    (r'^createuser/$', 'create_user'),
+    (r'^feedback/$', 'handle_feedback'),
 )

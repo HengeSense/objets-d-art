@@ -1,8 +1,10 @@
 element notification {
     attribute xmlns { "http://mjs-svc.com/schema/notifications" },
-    attribute type { "client" | "problem-cart" | "application" | "order" },
+    attribute id { text }
+    attribute type { "client" | "problem cart" | "application" | "order" },
     attribute urgency { "high" | "normal" | "low" },
     attribute status { "unresolved" | "partially resolved" | "resolved" },
+    attribute timestamp { text }
     element client {
         attribute client-id { text },
         element submission {
