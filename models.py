@@ -28,17 +28,20 @@ class Tag(models.Model):
 #
 class Score(models.Model):
     title = models.CharField(maxlength = 250)
+    description = models.TextField()
     duration = models.FloatField(max_digits = 5, decimal_places = 2)
     created = models.DateField()
     price = models.FloatField(max_digits = 5, decimal_places = 2)
     length = models.FloatField(max_digits = 3, decimal_places = 1) # In inches
     width = models.FloatField(max_digits = 3, decimal_places = 1) # In inches
-    tens_height = models.FloatField(max_digits = 3, decimal_places = 1) # The height of ten shippable objects in inches
-    tens_weight = models.FloatField(max_digits = 2, decimal_places = 1) # The weight of ten shippable objects in ounces
-    thumbnail_file = models.FileField(upload_to = "ThumbData/%Y/%m")
-    editable_file = models.FileField(upload_to = "ScoreFiles/%Y/%m") # Protect with .htaccess
-    viewable_file = models.FileField(upload_to = "ScorchData/%Y/%m")
-    printable_file = models.FileField(upload_to = "PrintData/%Y/%m") # Protect with .htaccess
+    height = models.FloatField(max_digits = 3, decimal_places = 1) # In inches
+    weight = models.FloatField(max_digits = 2, decimal_places = 1) # In ounces
+    thumbnail_file = models.FileField(upload_to = "ThumbData/%Y/%m") # PNG
+    editable_file = models.FileField(upload_to = "ScoreFiles/%Y/%m") # SIB
+    viewable_file = models.FileField(upload_to = "ScorchData/%Y/%m") # SIB/Scorch
+    printable_file = models.FileField(upload_to = "PrintData/%Y/%m") # PDF
+    recording_file = models.FileField(upload_to = "AudioData/%Y/%m", blank = True) # MP3
+    recording_credit = models.CharField(maxlength = 500)
     contract = models.ForeignKey('Contract')
     tags = models.ManyToManyField('Tag')
 
@@ -66,17 +69,16 @@ class Contract(models.Model):
     termination = models.TextField(blank = True)
     breach = models.TextField(blank = True)
     pricing = models.TextField(blank = True)
-    pricing_formula = models.ForeignKey('Tag') # tag refers to a module with a standard-named function to figure ratio of profits
     coupon_status = models.ManyToManyField('Tag')
+    coupons = models.ManyToManyField('Coupon')
     bulk_discount = models.IntegerField(default = 0)
+    bulk_discount_threshold = models.IntegerField(default = 0) # 0 means no bulk discount
     printing = models.TextField(blank = True)
     payment = models.ForeignKey('Tag') # tag refers to a module with a standard-named function that will notify the business to pay client
     rights = models.TextField(blank = True)
     # Business details
-    coupons = models.ManyToManyField('Coupon')
-    bulk_discount_threshold = models.IntegerField(default = 0) # 0 means no bulk discount
-    copies_sold = models.IntegerField()
-    since_previous_payment = models.IntegerField(default = 0)
+    copies_sold = models.IntegerField(default = 0)
+    sold_since_payment = models.IntegerField(default = 0)
     tags = models.ManyToManyField('Tag')
 
     class Admin:
@@ -102,13 +104,7 @@ class Contract(models.Model):
 # This model contains client applications
 #
 class Application(models.Model):
-    # For populating the User model
-    username = models.CharField(maxlength = 30, primary_key = True)
-    first_name = models.CharField(maxlength = 30)
-    last_name = models.CharField(maxlength = 30)
-    email = models.EmailField()
-
-    # Other information
+    user = models.ForeignKey(User)
     portfolio = models.CharField(maxlength = 200) # url or 'Emailed'
     bio = models.TextField()
     education = models.TextField()
@@ -132,6 +128,7 @@ class Client(models.Model):
     coupons = models.ManyToManyField('Coupon')
     contracts = models.ManyToManyField('Contract')
     balance = models.FloatField(max_digits = 5, decimal_places = 2)
+    yearly_earnings = models.FloatField(max_digits=8, decimal_places = 2)
     total_earnings = models.FloatField(max_digits = 8, decimal_places = 2)
     tags = models.ManyToManyField('Tag')
 
