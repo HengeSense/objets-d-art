@@ -10,10 +10,9 @@ urlpatterns = patterns('project.objetsdart.customer.views',
 
     (r'^events/?$', 'calendar'),
 
-    (r'^score/(?P<id>\d+)/?$', 'get_objet_by_id'),
     (r'^score/(?P<slug>[a-z\-]+)/?$', 'get_objet_by_slug'),
     (r'^composer/(?P<user_name>.+)/?$', 'get_creator'),
-    (r'^composer/(?P<user_name>[^/]+)/commission/?$', 'commission_inquiry'),
+    (r'^composer/(?P<user_name>[^/]+)/contact/?$', 'client_contact'),
 
     (r'^categories/$', 'list_public_tags'),
     (r'^(?P<tag>category/.*)$', 'list_by_tag'),

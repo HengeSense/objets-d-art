@@ -1,4 +1,4 @@
-from project.models import Objet, Client, Customer, Cart, Coupon
+from project.models import *
 from project.backend.googlecheckout import Cart
 from django.shortcuts import render_to_response
 
@@ -17,11 +17,14 @@ def power_search(request):
 
 def calendar(request):
 
-def get_objet_by_id(request, id):
-
 def get_objet_by_slug(request, slug):
+    score = Score.objects.get(pk=id)
+    return render_to_response()
 
 def get_creator(request, user_name):
+
+
+def client_contact(request):
 
 def list_by_tag(request):
 

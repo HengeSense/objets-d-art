@@ -27,6 +27,7 @@ class Tag(models.Model):
 # This model describes a single score, along with ways to access it from both Client and Customer side.
 #
 class Score(models.Model):
+    slug = models.SlugField(primary_key = True)
     title = models.CharField(maxlength = 250)
     description = models.TextField()
     duration = models.FloatField(max_digits = 5, decimal_places = 2)
