@@ -122,6 +122,7 @@ class Application(models.Model):
 #
 class Client(models.Model):
     user = models.ForeignKey(User)
+    full_name = models.CharField(maxlength = 200) #for ease of searching
     profile = models.TextField(blank = True)
     bio = models.TextField(blank = True)
     works = models.ManyToManyField('Score')
