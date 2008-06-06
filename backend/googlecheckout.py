@@ -306,6 +306,7 @@ class Interaction:
     def _hello(self):
         xml_temp = xml.dom.minidom.parseString('<hello xmlns="http://checkout.google.com/schema/2" />')
         return self._write(xml_temp.toxml())
+
     def test_server(self):
         response = self._hello()
         if response.documentElement.tagname == 'bye': #XXX
@@ -316,6 +317,7 @@ class Interaction:
     def _diagnose(self):
         url_temp = self.url + '/diagnose'
         return self._write(self.xml_data, url = url_temp)
+
     def test_request(self):
         response = self._diagnose()
         if response.documentElement.tagname == "diagnosis":
@@ -325,6 +327,7 @@ class Interaction:
 
     def _commit(self):
         return self._write(self.xml_data)
+
     def send_request(self): 
         import re
         response = self._commit()

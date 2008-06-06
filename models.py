@@ -22,6 +22,22 @@ class Tag(models.Model):
 	    return self.description
 
 #####
+# NewsItem
+#
+# This model simply describes a news item
+#
+class NewsItem(models.Model):
+    timestamp = models.DateTimeField(auto_now = True)
+    title = models.CharField(maxlength = 512)
+    body = models.TextField()
+
+    class Admin:
+        pass
+
+    def __str__(self):
+        return self.title
+
+#####
 # Score
 # 
 # This model describes a single score, along with ways to access it from both Client and Customer side.
@@ -184,7 +200,7 @@ class Commission(models.Model):
 #
 class Coupon(models.Model):
     coupon_code = models.CharField(maxlength = 30, primary_key = True)
-    type =  models.ManyToManyField('Tag')
+    type =  models.ForeignKey('Tag')
     description = models.CharField(maxlength = 500)
     discount = models.IntegerField()
     begins = models.DateField()

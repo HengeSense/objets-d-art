@@ -2,15 +2,24 @@ from project.models import *
 from project.backend.googlecheckout import Cart
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import Http404
+import random
 
 def index(request):
-    # get 2 sales
-    # get 5 news items
-    # display render these two 
+    news = NewsItem.objects.all()[:5]
+    return render_to_response('customer/index.html', {'news_list': news})
 
 def news(request, page = 1):
+    start = (page - 1) * 10 + 1
+    if (NewsItem.objects.all().count() - start < 9):
+        news = NewsItem.objects.all()[start:start + 9]
+        return render_to_response('customer/news.html', {'news_list': news, 'page': page, 'next': True})
+    else:
+        news = NewsItem.objects.all()[start:]
+        return render_to_response('customer/news.html', {'news_list': news, 'page': page, 'next': False})
 
 def sales(request):
+    sales = Coupon.objects.filter(type__tag__iexact = 'coupon:c')
+    return render_to_response('customer/sales_list.html', {'sales_list': sales})
 
 def simple_search(request):
     if request.GET['q']:
@@ -79,7 +88,32 @@ def list_by_composer(request, user_name):
     else:
         raise Http404
 
-def handle_cart(request, cart_name = 'default'):
+def handle_cart(request, cart_id):
+    # Having a method like this helps keep urls clean, with actions hidden -
+    # also prevents people from sharing action urls
+    cart = get_object_or_404(Cart, pk = cart_id)
+    #XXX list items only if not user's cart
+    if (request.POST['action'] == 'add item'):
+        try:
+            _add_item(cart, request.POST['sku'], request.POST['quantity'])
+        except e:
+            raise Http500(str(e))
+    elif (request.POST['action'] == 'modify cart'):
+        try:
+            _modify_cart(cart, request.POST)
+        except e:
+            raise Http500(str(e))
+    elif (request.POST['delete cart']):
+        try:
+            _del_cart(cart)
+            _list_carts(request.user)
+        except e:
+            raise Http505(str(e))
+    return render_to_response('customer/display_cart.html', {'cart': cart, 'read only': readonly})
+
+@login_required
+def handle_carts(request):
+
 
 def create_user(request):
 
@@ -87,8 +121,12 @@ def handle_feedback(request):
 
 def _add_item(cart, item):
 
-def _del_item(cart, index):
+def _modify_cart(cart, post_dict): #add items or change quantities
+
+def _list_carts(user):
 
 def _add_cart(cart_name):
 
 def _del_cart(cart):
+
+def _apply_coupon

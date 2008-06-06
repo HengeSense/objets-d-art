@@ -21,7 +21,8 @@ urlpatterns = patterns('project.objetsdart.customer.views',
     (r'^(?P<tag>ensemble/.*)$', 'list_by_tag'),
     (r'^(?P<tag>difficulty/\d+)$', 'list_by_tag'),
 
-    (r'^cart/(?<cart_name>[a-z\-]+)/?$', 'handle_cart'),
+    (r'^cart/(?<cart_id>\d+)/$', 'handle_cart'),
+    (r'^carts/$', 'handle_carts'),
     (r'^createuser/$', 'create_user'),
     (r'^feedback/$', 'handle_feedback'),
 )
