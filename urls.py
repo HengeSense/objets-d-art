@@ -20,6 +20,7 @@ urlpatterns = patterns('',
     (r'^~(?P<username>[-_a-zA-Z0-9]+)/$', 'store.views.creator_detail'),
     (r'^~(?P<filter>[-_a-zA-Z0-9]+)/products/$', 'store.views.filter_products', {'filter_by': 'creator__user__username__iexact'}),
     (r'^store/', include('store.urls')),
+    (r'^portfolio/', include('portfolio.urls')),
     (r'^admin/(.*)', admin.site.root),
     (r'^forums/', include('forum.urls')),
 
