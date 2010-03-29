@@ -12,6 +12,7 @@ sitemaps = {
 
 urlpatterns = patterns('',
     (r'^$', 'blog.views.front'),
+    (r'^crossdomain.xml$', 'django.views.generic.simple.direct_to_template', {'template': 'flatpages/crossdomainpolicy.xml'}),
     (r'^sitemap.xml$', 'django.views.generic.simple.direct_to_template', {'template': 'flatpages/sitemap.xml'}),
     (r'^sitemap-other.xml$', 'django.views.generic.simple.direct_to_template', {'template': 'flatpages/sitemap-other.xml'}),
     (r'^sitemap-store.xml$', 'django.contrib.sitemaps.views.sitemap', {'sitemaps': sitemaps}),
